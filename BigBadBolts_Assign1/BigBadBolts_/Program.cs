@@ -1,16 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 /**
- * NOTES TO MY PARTNER: NONE FOR NOW 
+ * NOTES TO MY PARTNER: i wrote a helper function for profanity checking. not sure if you need it but to call it you say
+ * vulgarityChecker("SOME STRING");  //will return true if profanity is found
  */
 namespace BigBadBolts_
 {
     class Program
     {
+        static public List<string> BANNED_WORDS = new List<string>()
+        {
+            "fudge","shoot","baddie","butthead"
+        };
 
 
-
-
+        /**
+         * This is the class definition for the Post class. 
+         * Created by Byron. 
+         */
         public class Post
         {
             private readonly uint postId;
@@ -22,7 +29,7 @@ namespace BigBadBolts_
             private uint downVotes;
             private uint weight;
             private readonly DateTime timeStamp;
-            //private SortedSet<Comment> postComments; Uncomment this when the comments are written.
+            private SortedSet<Comment> postComments;
 
             public string Title //This is my property for a post title
             {
@@ -43,11 +50,47 @@ namespace BigBadBolts_
                 }
             }//end title property
 
-            private bool vulgarityChecker(string s)
+
+        }//End post class
+
+        /**
+         * This is the definition for the Comment class
+         * Created byr Byron Hogan
+         */
+         public class Comment
+        {
+            private readonly uint commentID;
+            private readonly uint authorID;
+            private string content;
+            private readonly uint parentID;
+            private uint upVotes;
+            private uint downVotes;
+            private readonly DateTime timeStamp;
+            private SortedSet<Comment> commentReplies;
+            private uint indentLevel;
+
+
+
+
+
+        }
+
+        /**
+         * This is a helper function that can be called to check for profanity.
+         * Parameters: This takes a string and will check the entire thing for profanity somewhere in it
+         * Returns:   This will return true if profanity has been found.
+         */
+        static public bool vulgarityChecker(string s)  
+        {
+            foreach (string badWord in BANNED_WORDS) // Check each word in the bad words if they appear in the passed string
             {
-                return false;
+                if (s.ToLower().Contains(badWord)){ //Found a bad word!
+                    return true;
+                }
             }
-        }//End class
+            // The string is clean of bad words,return false
+            return false;
+        }
 
         /**
          * This is the main function of the program. It runs a loop that will quit out when the user enters 
