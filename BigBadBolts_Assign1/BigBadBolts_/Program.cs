@@ -31,6 +31,60 @@ namespace BigBadBolts_
             private readonly DateTime timeStamp;
             private SortedSet<Comment> postComments;
 
+
+
+            public uint Score
+            {
+                get { return upVotes - downVotes; }
+            }
+
+            public uint PostRating
+            {
+                get
+                {
+                    if (weight == 0)
+                    {
+                      return Score; 
+                    }
+                    else if (weight == 1)
+                    {
+                        double returnValue = (double)Score * .66;
+                        return (uint)returnValue;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                }
+            }
+
+            public string PostContent
+            {
+                get { return postContent; }
+                set
+                {
+                    if (value.Length >= 1 && value.Length <= 1000)
+                    {
+                        try
+                        {
+                            if (vulgarityChecker(value))//If true, found profanity
+                            {
+                                throw new FoulLanguageException();
+                            }
+                            else //did not find profanity
+                            {
+                                postContent = value;
+                            }
+                        }
+                        catch (FoulLanguageException fle)
+                        {
+                            Console.WriteLine(fle.ToString());
+                            return;//THIS MIGHT TAKE US BACK TO THE MAIN LOOP.HAVE TO TEST
+                        }
+                    }
+                }
+            }
+
             public string Title //This is my property for a post title
             {
                 get { return title; }
@@ -38,13 +92,21 @@ namespace BigBadBolts_
                 {
                     if (value.Length >= 1 && value.Length <= 100)
                     {
-                        if (vulgarityChecker(value))//If true, found profanity
+                        try
                         {
-                            //TODO: IMPLEMENT THE FOUL LANGUAGE EXECPTION
+                            if (vulgarityChecker(value))//If true, found profanity
+                            {
+                                //TODO: IMPLEMENT THE FOUL LANGUAGE EXECPTION
+                            }
+                            else //did not find profanity
+                            {
+                                title = value;
+                            }
                         }
-                        else //did not find profanity
+                        catch (FoulLanguageException fle)
                         {
-                            title = value;
+                            Console.WriteLine(fle.ToString());
+                            return; //BE SUSPIPCIOUS HERE
                         }
                     }
                 }
@@ -55,7 +117,7 @@ namespace BigBadBolts_
 
         /**
          * This is the definition for the Comment class
-         * Created byr Byron Hogan
+         * Created by Byron Hogan
          */
          public class Comment
         {
@@ -73,6 +135,19 @@ namespace BigBadBolts_
 
 
 
+        }
+
+        /**
+         * This is the definition of the foul language exception
+         * 
+         * returns:  A string indicationg that a FLE occured
+         */
+         public class FoulLanguageException : Exception
+        {
+            public override string ToString()
+            {
+                return "You seem to have included a bad word in your message. Please avoid doing this in the future";
+            }
         }
 
         /**
