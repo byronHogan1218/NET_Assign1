@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 /**
  * NOTES TO MY PARTNER: i wrote a helper function for profanity checking. not sure if you need it but to call it you say
- * vulgarityChecker("SOME STRING");  //will return true if profanity is found
+ * vulgarityChecker("SOME STRING");  //will return true if profanity is found, thats the goal anyways.
+ * 
  */
 namespace BigBadBolts_
 {
@@ -18,9 +20,9 @@ namespace BigBadBolts_
          * This is the class definition for the Post class. 
          * Created by Byron. 
          */
-        public class Post
+        public class Post : IComparable, IEnumerable
         {
-            private readonly uint postId;
+            private readonly uint postID;
             private string title;
             private readonly uint authorID;
             private string postContent;
@@ -31,7 +33,48 @@ namespace BigBadBolts_
             private readonly DateTime timeStamp;
             private SortedSet<Comment> postComments;
 
-
+            /////////CONSTRUCTOR ZONE////////////////////////////////////////////////////////
+            Post() //DEFAULT CONSTRUCTOR....may need some tweaks
+            {
+                postID = 0;
+                title = "";
+                authorID = 0;
+                postContent = "";
+                subHome = 0;
+                upVotes = 0;
+                downVotes = 0;
+                weight = 0;
+                timeStamp = DateTime.Now;
+                postComments = null;
+            }
+            //This is used to create a new post
+            Post(uint _postID, string _title, uint _authorID, string _postContent, uint _subHome, uint _upVotes, uint _downVotes, uint _weight, DateTime _timeStamp, SortedSet<Comment> _postComments)
+            {
+                postID = _postID;
+                title = _title;
+                authorID = _authorID;
+                postContent = _postContent;
+                subHome = _subHome;
+                upVotes = _upVotes;
+                downVotes = _downVotes;
+                weight = _weight;
+                timeStamp = _timeStamp;
+                postComments = _postComments;
+            }
+            Post(string _title, uint _authorID, string _postContent, uint _subHome)
+            {
+                postID = 0;
+                title = _title;
+                authorID = _authorID;
+                PostContent = _postContent;
+                subHome = _subHome;
+                upVotes = 1;
+                downVotes = 0;
+                weight = 0;
+                timeStamp = DateTime.Now;
+                postComments = null;
+            }
+            ////////////////END CONSTREUCTOR ZONE///////////////////////////////////////////
 
             public uint Score
             {
@@ -96,7 +139,7 @@ namespace BigBadBolts_
                         {
                             if (vulgarityChecker(value))//If true, found profanity
                             {
-                                //TODO: IMPLEMENT THE FOUL LANGUAGE EXECPTION
+                                throw new FoulLanguageException();
                             }
                             else //did not find profanity
                             {
@@ -112,14 +155,89 @@ namespace BigBadBolts_
                 }
             }//end title property
 
+            public int CompareTo(Object aplha)
+            {
+                if (aplha == null)
+                    throw new ArgumentNullException();
+
+                Post rightOp = aplha as Post;
+
+                if (rightOp != null)
+                {
+                    return PostRating.CompareTo(rightOp.PostRating); //This might have to be switched around
+                }
+                else
+                {
+                    throw new ArgumentException("[Post]:CompareTo argument is not a Post Object.");
+                }
+            }
+
+    /*        IEnumerable IEnumerable.GetEnumerator()
+            {
+                return (IEnumerable)GetEnumerator();
+            }
+
+            public PostEnum GetEnumerator()
+            {
+                return new PostEnum(postComments);
+            }
+            */
 
         }//End post class
+
+       /* public class PostEnum : IEnumerator
+        {
+            public postComments[] _posts;
+
+            int position = -1;
+
+            public PostEnum(Post[] list)
+            {
+                _posts = list;
+            }
+            public bool MoveNext()
+            {
+                ++position;
+                return (position < _posts.Length);
+            }
+
+            public void Reset()
+            {
+                position = -1;
+            }
+
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return Current;
+                }
+            }
+
+            public Post Current
+            {
+                get
+                {
+                    try
+                    {
+                        return _posts[position];
+                    }
+                    catch (IndexOutOfRangeException)
+                    {
+                        throw new InvalidOperationException();
+                    }
+                }
+            }
+        }
+        */
+
+
 
         /**
          * This is the definition for the Comment class
          * Created by Byron Hogan
          */
-         public class Comment
+        public class Comment
         {
             private readonly uint commentID;
             private readonly uint authorID;
@@ -135,7 +253,7 @@ namespace BigBadBolts_
 
 
 
-        }
+        }//End comment class
 
         /**
          * This is the definition of the foul language exception
