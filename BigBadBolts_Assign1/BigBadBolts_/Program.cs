@@ -80,6 +80,12 @@ namespace BigBadBolts_
             }
             ////////////////END CONSTREUCTOR ZONE///////////////////////////////////////////
 
+            public uint PostID
+            {
+                get { return postID; }
+            }
+
+
             public uint Score
             {
                 get { return upVotes - downVotes; }
@@ -308,20 +314,15 @@ namespace BigBadBolts_
                 downVotes = _downVotes;
                 timeStamp = _timeStamp;
             }
-            /*Change to work for comments
-            Comment(string _title, uint _authorID, string _postContent, uint _subHome)
+            public Comment(string _content, uint _authorID, uint _parentID)
             {
-                postID = 0;
-                title = _title;
+                content = _content;
                 authorID = _authorID;
-                PostContent = _postContent;
-                subHome = _subHome;
+                parentID = _parentID;
                 upVotes = 1;
                 downVotes = 0;
-                weight = 0;
-                timeStamp = DateTime.Now;
-                postComments = null;
-            } */
+
+            } 
             ////////////////END CONSTREUCTOR ZONE///////////////////////////////////////////
 
 
@@ -591,19 +592,49 @@ namespace BigBadBolts_
                             case ("2"):  //List all posts from all subreddits
                                 break;
                             case ("3"):  //List all posts from a single subreddit
-                                foreach(Post test in myPosts)
-                                {
-                                    Console.WriteLine(test.Title.ToString());
-                                }
-                                Console.WriteLine(" ");
-                                foreach (Comment test in myComments)
-                                {
-                                    Console.WriteLine(test.Content.ToString());
-                                }
                                 break;
                             case ("4"):  //View comments of a single post
                                 break;
                             case ("5"):  //Add comment to post
+                                string postIDtoComment;
+                                string comment;
+                                bool found =false;
+                                Console.Write("Please enter the ID of the post you wish to add a comment to: ");
+                                postIDtoComment = Console.ReadLine();
+                                Console.WriteLine("");//blank line
+                                foreach (Post post in myPosts) //Search for the post to comment to
+                                {
+                                    if (post.PostID.ToString() == postIDtoComment)//Found the post to add a comment
+                                    {
+                                        found = true;
+                                        Console.WriteLine("Please enter a Comment: ");
+                                        try { 
+                                        comment = Console.ReadLine();
+                                            if (vulgarityChecker("comment"))
+                                            {
+                                                throw new FoulLanguageException();
+                                            }
+                                        }
+                                        catch (FoulLanguageException fle)
+                                        {
+                                            Console.WriteLine(fle.ToString());
+                                            break;
+                                        }
+                                        Comment commentToAdd = new Comment(
+                                            comment, //content
+                                            0001, //authorID //THIS IS ROGNESS USER
+                                            post.PostID //parentID
+                                            );
+                                        myComments.Add(commentToAdd);
+                                        Console.WriteLine("");//blank line
+                                        Console.WriteLine("Comment was added successfully to post : " + postIDtoComment);
+                                        Console.WriteLine("");//blank line
+                                        break;
+                                    }
+                                }
+                                //We did not find the postID
+                                if (!found)
+                                    Console.WriteLine("The postID entered was not found.");
                                 break;
                             case ("6"):  //Add reply to comment
                                 break;
