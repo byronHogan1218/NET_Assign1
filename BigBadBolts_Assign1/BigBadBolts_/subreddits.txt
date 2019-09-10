@@ -1,0 +1,5 @@
+﻿0002	all	5	5
+0003	funny	5	3
+0004	aww	5	4
+2433	Factorio	1	1
+7612	HydroHomies	3	2
