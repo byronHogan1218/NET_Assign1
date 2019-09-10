@@ -20,7 +20,7 @@ namespace BigBadBolts_
          * This is the class definition for the Post class. 
          * Created by Byron. 
          */
-        public class Post : IComparable, IEnumerable
+        public class Post : IComparable
         {
             private readonly uint postID;
             private string title;
@@ -185,20 +185,53 @@ namespace BigBadBolts_
 
         }//End post class
 
-       /* public class PostEnum : IEnumerator
+        /** Collection of Post objects. This class
+        * implements IEnumerable so that it can be used
+        * with ForEach syntax. 
+        */
+        public class Posts : IEnumerable
         {
-            public postComments[] _posts;
+            private Post[] _post;
+            public Posts(Post[] pArray)
+            {
+                _post = new Post[pArray.Length];
 
+                for (int i = 0; i < pArray.Length; i++)
+                {
+                    _post[i] = pArray[i];
+                }
+            }
+
+            // Implementation for the GetEnumerator method.
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return (IEnumerator)GetEnumerator();
+            }
+
+            public PostEnum GetEnumerator()
+            {
+                return new PostEnum(_post);
+            }
+        }
+
+        // When you implement IEnumerable, you must also implement IEnumerator.
+        public class PostEnum : IEnumerator
+        {
+            public Post[] _post;
+
+            // Enumerators are positioned before the first element
+            // until the first MoveNext() call.
             int position = -1;
 
             public PostEnum(Post[] list)
             {
-                _posts = list;
+                _post = list;
             }
+
             public bool MoveNext()
             {
-                ++position;
-                return (position < _posts.Length);
+                position++;
+                return (position < _post.Length);
             }
 
             public void Reset()
@@ -220,7 +253,7 @@ namespace BigBadBolts_
                 {
                     try
                     {
-                        return _posts[position];
+                        return _post[position];
                     }
                     catch (IndexOutOfRangeException)
                     {
@@ -229,15 +262,13 @@ namespace BigBadBolts_
                 }
             }
         }
-        */
-
 
 
         /**
          * This is the definition for the Comment class
          * Created by Byron Hogan
          */
-        public class Comment
+        public class Comment : IComparable
         {
             private readonly uint commentID;
             private readonly uint authorID;
@@ -249,18 +280,161 @@ namespace BigBadBolts_
             private SortedSet<Comment> commentReplies;
             private uint indentLevel;
 
+            public uint Score
+            {
+                get { return upVotes - downVotes; }
+            }
+
+            /////////CONSTRUCTOR ZONE////////////////////////////////////////////////////////
+            Comment() //DEFAULT CONSTRUCTOR....may need some tweaks
+            {
+                commentID = 0;
+                authorID = 0;
+                content = "";
+                parentID = 0;
+                upVotes = 0;
+                downVotes = 0;
+                timeStamp = DateTime.Now;
+                commentReplies = null;
+                indentLevel = 0;
+            }
+            //This is used to create a new post from file.
+            /*Comment(uint _commentID, uint _authorID, string _content, uint _parentID, uint _upVotes, uint _downVotes, DateTime _timeStamp, SortedSet<Comment> _postComments)
+            {
+                postID = _postID;
+                title = _title;
+                authorID = _authorID;
+                postContent = _postContent;
+                subHome = _subHome;
+                upVotes = _upVotes;
+                downVotes = _downVotes;
+                weight = _weight;
+                timeStamp = _timeStamp;
+                postComments = _postComments;
+            }*/
+            /*Change to work for comments
+            Comment(string _title, uint _authorID, string _postContent, uint _subHome)
+            {
+                postID = 0;
+                title = _title;
+                authorID = _authorID;
+                PostContent = _postContent;
+                subHome = _subHome;
+                upVotes = 1;
+                downVotes = 0;
+                weight = 0;
+                timeStamp = DateTime.Now;
+                postComments = null;
+            } */
+            ////////////////END CONSTREUCTOR ZONE///////////////////////////////////////////
 
 
+   
 
+        public int CompareTo(Object aplha)
+            {
+                if (aplha == null)
+                    throw new ArgumentNullException();
+
+                Comment rightOp = aplha as Comment;
+
+                if (rightOp != null)
+                {
+                    return Score.CompareTo(rightOp.Score); //This might have to be switched around
+                }
+                else
+                {
+                    throw new ArgumentException("[Comment]:CompareTo argument is not a Comment Object.");
+                }
+            }
 
         }//End comment class
+
+        /** Collection of Comment objects. This class
+         * implements IEnumerable so that it can be used
+         * with ForEach syntax. 
+         */
+        public class Comments : IEnumerable
+        {
+            private Comment[] _comment;
+            public Comments(Comment[] cArray)
+            {
+                _comment = new Comment[cArray.Length];
+
+                for (int i = 0; i < cArray.Length; i++)
+                {
+                    _comment[i] = cArray[i];
+                }
+            }
+
+            // Implementation for the GetEnumerator method.
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return (IEnumerator)GetEnumerator();
+            }
+
+            public CommentEnum GetEnumerator()
+            {
+                return new CommentEnum(_comment);
+            }
+        }
+
+        // When you implement IEnumerable, you must also implement IEnumerator.
+        public class CommentEnum : IEnumerator
+        {
+            public Comment[] _comment;
+
+            // Enumerators are positioned before the first element
+            // until the first MoveNext() call.
+            int position = -1;
+
+            public CommentEnum(Comment[] list)
+            {
+                _comment = list;
+            }
+
+            public bool MoveNext()
+            {
+                position++;
+                return (position < _comment.Length);
+            }
+
+            public void Reset()
+            {
+                position = -1;
+            }
+
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return Current;
+                }
+            }
+
+            public Comment Current
+            {
+                get
+                {
+                    try
+                    {
+                        return _comment[position];
+                    }
+                    catch (IndexOutOfRangeException)
+                    {
+                        throw new InvalidOperationException();
+                    }
+                }
+            }
+        }
+
 
         /**
          * This is the definition of the foul language exception
          * 
          * returns:  A string indicationg that a FLE occured
          */
-         public class FoulLanguageException : Exception
+        public class FoulLanguageException : Exception
         {
             public override string ToString()
             {
@@ -289,7 +463,7 @@ namespace BigBadBolts_
          * This is the main function of the program. It runs a loop that will quit out when the user enters 
          * the correct option to quit. It mainly functions to call other functions to do the rest of the program.
          */
-        static void Main(string[] args)
+        static void Main(string[] args) //Need to implement reading in input files
         {
             bool exitProgram = false;
             string userInput;
