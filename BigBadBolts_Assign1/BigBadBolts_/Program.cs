@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 /**
  * NOTES TO MY PARTNER: i wrote a helper function for profanity checking. not sure if you need it but to call it you say
  * vulgarityChecker("SOME STRING");  //will return true if profanity is found, thats the goal anyways.
  * 
+ * Need to add your reads to the file reader function and the main class call, i have posts and comments
  */
 namespace BigBadBolts_
 {
@@ -14,6 +16,8 @@ namespace BigBadBolts_
         {
             "fudge","shoot","baddie","butthead"
         };
+        static public SortedSet<Post> myPosts = new SortedSet<Post>();
+        static public SortedSet<Comment> myComments = new SortedSet<Comment>();
 
 
         /**
@@ -34,7 +38,7 @@ namespace BigBadBolts_
             private SortedSet<Comment> postComments;
 
             /////////CONSTRUCTOR ZONE////////////////////////////////////////////////////////
-            Post() //DEFAULT CONSTRUCTOR....may need some tweaks
+            public Post() //DEFAULT CONSTRUCTOR....may need some tweaks
             {
                 postID = 0;
                 title = "";
@@ -48,7 +52,7 @@ namespace BigBadBolts_
                 postComments = null;
             }
             //This is used to create a new post
-            Post(uint _postID, string _title, uint _authorID, string _postContent, uint _subHome, uint _upVotes, uint _downVotes, uint _weight, DateTime _timeStamp, SortedSet<Comment> _postComments)
+            public Post(uint _postID, uint _authorID, string _title, string _postContent, uint _subHome, uint _upVotes, uint _downVotes, uint _weight, DateTime _timeStamp)
             {
                 postID = _postID;
                 title = _title;
@@ -59,9 +63,9 @@ namespace BigBadBolts_
                 downVotes = _downVotes;
                 weight = _weight;
                 timeStamp = _timeStamp;
-                postComments = _postComments;
+               // postComments = _postComments as SortedSet<Comment>;
             }
-            Post(string _title, uint _authorID, string _postContent, uint _subHome)
+            public Post(string _title, uint _authorID, string _postContent, uint _subHome)
             {
                 postID = 0;
                 title = _title;
@@ -172,16 +176,6 @@ namespace BigBadBolts_
                 }
             }
 
-    /*        IEnumerable IEnumerable.GetEnumerator()
-            {
-                return (IEnumerable)GetEnumerator();
-            }
-
-            public PostEnum GetEnumerator()
-            {
-                return new PostEnum(postComments);
-            }
-            */
 
         }//End post class
 
@@ -280,13 +274,18 @@ namespace BigBadBolts_
             private SortedSet<Comment> commentReplies;
             private uint indentLevel;
 
+            public string Content
+            {
+                get { return this.content; }
+            }
+
             public uint Score
             {
                 get { return upVotes - downVotes; }
             }
 
             /////////CONSTRUCTOR ZONE////////////////////////////////////////////////////////
-            Comment() //DEFAULT CONSTRUCTOR....may need some tweaks
+            public Comment() //DEFAULT CONSTRUCTOR....may need some tweaks
             {
                 commentID = 0;
                 authorID = 0;
@@ -299,19 +298,16 @@ namespace BigBadBolts_
                 indentLevel = 0;
             }
             //This is used to create a new post from file.
-            /*Comment(uint _commentID, uint _authorID, string _content, uint _parentID, uint _upVotes, uint _downVotes, DateTime _timeStamp, SortedSet<Comment> _postComments)
+            public Comment(uint _commentID, uint _authorID, string _content, uint _parentID, uint _upVotes, uint _downVotes, DateTime _timeStamp)
             {
-                postID = _postID;
-                title = _title;
+                commentID = _commentID;
+                content = _content;
                 authorID = _authorID;
-                postContent = _postContent;
-                subHome = _subHome;
+                parentID = _parentID;
                 upVotes = _upVotes;
                 downVotes = _downVotes;
-                weight = _weight;
                 timeStamp = _timeStamp;
-                postComments = _postComments;
-            }*/
+            }
             /*Change to work for comments
             Comment(string _title, uint _authorID, string _postContent, uint _subHome)
             {
@@ -460,6 +456,86 @@ namespace BigBadBolts_
         }
 
         /**
+         * This function gets and reads input from files provided to us. 
+         * Parameters: myPosts- a SortedSet of post objects to fill with post info
+         *             myComments - a SortedSet of Comment objects to fill with comment info
+         */
+         static public void getFileInput(SortedSet<Post> myPosts, SortedSet<Comment> myComments)
+        {
+            string currentLine;
+            string[] tokens;
+
+            //This will read the post file and build the objects from there
+            using (StreamReader inFile = new StreamReader("..//..//..//posts.txt"))
+            {
+                currentLine = inFile.ReadLine(); //prime the read
+                while (currentLine != null)
+                {
+                    tokens = currentLine.Split('\t');
+
+                    string dateString = tokens[8] + '-' + tokens[9] + '-' + tokens[10] + ' ' + tokens[11] + ':' + tokens[12] + ':' + tokens[13];
+                    DateTime temp;
+                    if (DateTime.TryParse(dateString, out temp))//Makes sure the date converted successfully
+                    {
+                        Post postToAdd = new Post(//build the post to add
+                            UInt32.Parse(tokens[0]),//postId
+                            UInt32.Parse(tokens[1]),//authorID
+                            tokens[2],//title
+                            tokens[3],//postContent
+                            UInt32.Parse(tokens[4]),//subHome
+                            UInt32.Parse(tokens[5]),//upvotes
+                            UInt32.Parse(tokens[6]),//downVotes
+                            UInt32.Parse(tokens[7]),//weight
+                            temp//dateTime
+                            );
+
+                        myPosts.Add(postToAdd);
+                    }
+                    else //We failed to conver the date
+                    {
+                        Console.WriteLine("We didn't conver the date properly! QUIT (Handle this better)");
+                        return;
+                    }
+                    currentLine = inFile.ReadLine(); //get the next line
+                }
+            }
+
+            //This will read the comment file and build the objects from there
+            using (StreamReader inFile = new StreamReader("..//..//..//comments.txt"))
+            {
+                currentLine = inFile.ReadLine(); //prime the read
+                while (currentLine != null)
+                {
+                    tokens = currentLine.Split('\t');
+
+                    string dateString = tokens[6] + '-' + tokens[7] + '-' + tokens[8] + ' ' + tokens[9] + ':' + tokens[10] + ':' + tokens[11];
+                    DateTime temp;
+                    if (DateTime.TryParse(dateString, out temp))//Make sure the date converted successfully
+                    {
+                        Comment commentToAdd = new Comment(//build the comment to add
+                            UInt32.Parse(tokens[0]),//commentId
+                            UInt32.Parse(tokens[1]),//authorID
+                            tokens[2],//content
+                            UInt32.Parse(tokens[3]),//parentID
+                            UInt32.Parse(tokens[4]),//upvotes
+                            UInt32.Parse(tokens[5]),//downVotes
+                            temp//dateTime
+                            );
+
+                        myComments.Add(commentToAdd);
+                    }
+                    else
+                    {
+                        Console.WriteLine("We didn't convert the date properly! QUIT (Handle this better)");
+                        return;
+                    }
+                    currentLine = inFile.ReadLine(); //get the next line
+                }
+            }
+
+        }
+
+        /**
          * This is the main function of the program. It runs a loop that will quit out when the user enters 
          * the correct option to quit. It mainly functions to call other functions to do the rest of the program.
          */
@@ -467,6 +543,10 @@ namespace BigBadBolts_
         {
             bool exitProgram = false;
             string userInput;
+
+
+            //Read the input files here to build the objects
+            getFileInput( myPosts, myComments);
 
             Console.WriteLine("Welcome to CSCI 473 Assignment 1.");
 
@@ -511,6 +591,15 @@ namespace BigBadBolts_
                             case ("2"):  //List all posts from all subreddits
                                 break;
                             case ("3"):  //List all posts from a single subreddit
+                                foreach(Post test in myPosts)
+                                {
+                                    Console.WriteLine(test.Title.ToString());
+                                }
+                                Console.WriteLine(" ");
+                                foreach (Comment test in myComments)
+                                {
+                                    Console.WriteLine(test.Content.ToString());
+                                }
                                 break;
                             case ("4"):  //View comments of a single post
                                 break;
