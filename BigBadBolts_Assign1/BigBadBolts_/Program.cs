@@ -641,6 +641,11 @@ namespace BigBadBolts_
                 }
             }
 
+            public override string ToString()
+            {
+                return this.content + '\n';
+            }
+
         }//End comment class
 
         /** Collection of Comment objects. This class
