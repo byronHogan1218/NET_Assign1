@@ -20,6 +20,259 @@ namespace BigBadBolts_
         static public SortedSet<Comment> myComments = new SortedSet<Comment>();
 
 
+        /* The User class
+ * By Margaret
+ */
+        public class User : IComparable
+        {
+            private readonly uint id;
+            private readonly string name;
+            private int postScore;
+            private int commonScore;
+
+            //public versions
+            public uint Id
+            {
+                get { return id; }
+            }
+            //i need to add unique id requirement
+
+            public string Name
+            {
+                get { return name; }
+                set
+                {
+                    if (value.Length >= 5 && value.Length <= 21) ; //Added a semicolon
+                        //name = value;//This isnt working properly
+                }
+            }
+
+            public int PostScore
+            {
+                get { return postScore; }
+                set { postScore = value; }
+            }
+
+            public int CommonScore
+            {
+                get { return commonScore; }
+                set { commonScore = value; }
+            }
+
+            // default constructor for User
+            User()
+            {
+                id = 0;
+                name = "";
+                postScore = 0;
+                commonScore = 0;
+            }
+
+            // constructor for User when all properties are set
+            User(uint conId, string conName, int conPost, int conCommon)
+            {
+                id = conId;
+                name = conName;
+                postScore = conPost;
+                commonScore = conCommon;
+            }
+
+            //Used to create new user
+            User(string conName)
+            {
+                id = 0;
+                name = conName;
+                postScore = 0;
+                commonScore = 0;
+            }
+
+            public int CompareTo(object alpha)
+            {
+                if (alpha == null)
+                    throw new ArgumentNullException();
+
+                User rightOp = alpha as User;
+
+                if (rightOp != null)
+                    return Name.CompareTo(rightOp.Name);
+                else
+                    throw new ArgumentException("[User]: CompareTo argument is not a Name");
+            }
+            //need to finish toString
+            public override string ToString()
+            {//wasn't sure how to format toString
+                return "WORDS"; // Console.WriteLine();  THIS NEEDS TO BE FIXED
+            }
+
+        }
+
+        /* Subreddit class
+         * by Margaret
+         */
+        public class Subreddit : IComparable
+        {
+            private readonly uint id;
+            private string name;
+            private uint members;
+            private uint active;
+            private SortedSet<Post> subPosts;
+
+            //public versions
+            public uint Id
+            {
+                get { return id; }
+                set { }// id = value; } added the '}' this needs to be fixed
+            }
+            //i need to do unique id
+
+            public string Name
+            {
+                get { return name; }
+                set
+                {
+                    if (value.Length >= 3 && value.Length <= 21)
+                        name = value;
+                }
+            }
+
+            public uint Members
+            {
+                get { return members; }
+                set { members = value; }
+            }
+
+            public uint Active
+            {
+                get { return active; }
+                set { active = value; }
+            }
+
+            //defult constructor
+            public Subreddit()
+            {
+                id = 0;
+                name = "";
+                members = 0;
+                active = 0;
+                subPosts = null;
+            }
+
+            //constructor to create new subreddit
+            public Subreddit(string conName)
+            {
+                id = 0;
+                conName = "";
+                members = 0;
+                active = 0;
+                subPosts = null;
+            }
+
+            //constructor for input file
+            public Subreddit(uint conId, string conName, uint conMembers, uint conActive)
+            {
+                id = conId;
+                name = conName;
+                members = conMembers;
+                //active = conactive; conactive isnt working
+                subPosts = null;
+            }
+
+            public int CompareTo(Object alpha)
+            {
+                if (alpha == null)
+                    throw new ArgumentNullException();
+
+                Subreddit rightOp = alpha as Subreddit;
+
+                if (rightOp != null)
+                    return Name.CompareTo(rightOp.Name);
+                else
+                    throw new ArgumentException("[Subreddit]: CompareTo argument is not a name");
+            }
+        }
+
+
+        //Subreddit IEnumerable
+        public class SubredditEnum : IEnumerable
+        {
+            private Subreddit[] _subreddit;
+
+            public SubredditEnum(Subreddit[] subArray)
+            {
+                _subreddit = new Subreddit[_subreddit.Length];
+
+                for (int i = 0; i < subArray.Length; i++)
+                {
+                    _subreddit[i] = subArray[i];
+                }
+
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return (IEnumerator)GetEnumerator();
+            }
+
+            public SubEnum GetEnumerator()
+            {
+                return new SubEnum(_subreddit);
+            }
+
+        }
+
+        //Subreddit IEnumerator
+        public class SubEnum : IEnumerator
+        {
+            public Subreddit[] _subreddit;
+
+            int position = -1;
+
+            public SubEnum(Subreddit[] list)
+            {
+                _subreddit = list;
+            }
+
+            public bool MoveNext()
+            {
+                position++;
+                return (position < _subreddit.Length);
+            }
+
+            public void Reset()
+            {
+                position = -1;
+            }
+
+            object IEnumerator.Current
+            {
+                get
+                {
+                    return Current;
+                }
+
+            }
+
+            public Subreddit Current
+            {
+                get
+                {
+                    try
+                    {
+                        return _subreddit[position];
+                    }
+
+                    catch (IndexOutOfRangeException)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
+                }
+
+            }
+
+        }
+
+
         /**
          * This is the class definition for the Post class. 
          * Created by Byron. 
