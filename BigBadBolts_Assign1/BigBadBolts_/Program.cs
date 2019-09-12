@@ -1,4 +1,15 @@
-﻿using System;
+﻿/*******************************************************************
+*                                                                  *
+*  CSCI 473-1/504-1       Assignment 1                Fall   2019  *
+*                                                                  *
+*                                                                  *
+*  Program Name:  Reddit                                           *
+*                                                                  *
+*  Programmer:    Byron Hogan,                                     *
+*                 Margaret Higginbotham, z1793581                  *
+*                                                                  *
+*******************************************************************/
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -64,7 +75,7 @@ namespace BigBadBolts_
             }
 
             // default constructor for User
-            User()
+            public User()
             {
                 id = 0;
                 name = "";
@@ -73,7 +84,7 @@ namespace BigBadBolts_
             }
 
             // constructor for User when all properties are set
-            User(uint conId, string conName, int conPost, int conCommon)
+            public User(uint conId, string conName, int conPost, int conCommon)
             {
                 id = conId;
                 name = conName;
@@ -82,7 +93,7 @@ namespace BigBadBolts_
             }
 
             //Used to create new user
-            User(string conName)
+            public User(string conName)
             {
                 id = 0;
                 name = conName;
@@ -190,7 +201,7 @@ namespace BigBadBolts_
                 id = conId;
                 name = conName;
                 members = conMembers;
-                //active = conactive; conactive isnt working
+                active = conActive;
                 subPosts = myPosts;
             }
 
@@ -761,8 +772,10 @@ namespace BigBadBolts_
          * This function gets and reads input from files provided to us. 
          * Parameters: myPosts- a SortedSet of post objects to fill with post info
          *             myComments - a SortedSet of Comment objects to fill with comment info
+         *             mySubreddits - Sorted set of Subreddit objects
+         *             myUsers - Sorted set of user objects
          */
-         static public void getFileInput(SortedSet<Post> myPosts, SortedSet<Comment> myComments)
+         static public void getFileInput(SortedSet<Post> myPosts, SortedSet<Comment> myComments, SortedSet<Subreddit> mySubreddits, SortedSet<User> myUsers)
         {
             string currentLine;
             string[] tokens;
@@ -835,6 +848,48 @@ namespace BigBadBolts_
                 }
             }
 
+            //This will read the the subreddit file and build the objects from them
+            using (StreamReader inFile = new StreamReader("..//..//..//subreddits.txt"))
+            {
+                currentLine = inFile.ReadLine(); //prime the read
+                while (currentLine != null)
+                {
+                    tokens = currentLine.Split('\t');
+
+                    Subreddit newSub = new Subreddit(//build the subreddit
+                      UInt32.Parse(tokens[0]),//id
+                      tokens[1],//name
+                      UInt32.Parse(tokens[2]), //Members
+                      UInt32.Parse(tokens[3]) //Active
+                    );
+
+                    mySubReddits.Add(newSub);
+                }
+
+                currentLine = inFile.ReadLine(); //get the next line
+            }
+
+            //This will get the user information and store it in the user object
+            using (StreamReader inFile = new StreamReader("..//..//..//users.txt"))
+            {
+                currentLine = inFile.ReadLine(); //prime the read
+                while (currentLine != null)
+                {
+                    tokens = currentLine.Split('\t');
+
+                    User newUser = new User(//build the user
+                      UInt32.Parse(tokens[0]),//id
+                      tokens[1],//name
+                      Int32.Parse(tokens[2]), //postScore
+                      Int32.Parse(tokens[3]) //commentScore
+                    );
+
+                    myUsers.Add(newUser);
+                }
+
+                currentLine = inFile.ReadLine(); //get the next line
+            }
+
         }
 
         /**
@@ -854,7 +909,7 @@ namespace BigBadBolts_
                 
 
             //Read the input files here to build the objects
-            getFileInput( myPosts, myComments);
+            getFileInput( myPosts, myComments, mySubReddits, myUsers);
 
             Console.WriteLine("Welcome to CSCI 473 Assignment 1.");
 
