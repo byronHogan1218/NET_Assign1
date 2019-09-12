@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 /**
  * NOTES TO MY PARTNER: i wrote a helper function for profanity checking. not sure if you need it but to call it you say
  * vulgarityChecker("SOME STRING");  //will return true if profanity is found, thats the goal anyways.
  * 
+ * Need to add your reads to the file reader function and the main class call, i have posts and comments
  */
 namespace BigBadBolts_
 {
@@ -14,14 +16,14 @@ namespace BigBadBolts_
         {
             "fudge","shoot","baddie","butthead"
         };
-
         static public SortedSet<Post> myPosts = new SortedSet<Post>();
         static public SortedSet<Comment> myComments = new SortedSet<Comment>();
 
+
         /* The User class
-         * By Margaret
-         */
-        public class User : iComparable
+ * By Margaret
+ */
+        public class User : IComparable
         {
             private readonly uint id;
             private readonly string name;
@@ -29,18 +31,20 @@ namespace BigBadBolts_
             private int commonScore;
 
             //public versions
-            public uint Id { 
-                get { return id; } 
+            public uint Id
+            {
+                get { return id; }
             }
             //i need to add unique id requirement
 
             public string Name
             {
                 get { return name; }
-                set { 
-                    if (value.Length >= 5 && value.Length <= 21)
-                        name = value;
-                 }
+                set
+                {
+                    if (value.Length >= 5 && value.Length <= 21) ; //Added a semicolon
+                        //name = value;//This isnt working properly
+                }
             }
 
             public int PostScore
@@ -84,29 +88,29 @@ namespace BigBadBolts_
 
             public int CompareTo(object alpha)
             {
-                if (alpha == null) 
+                if (alpha == null)
                     throw new ArgumentNullException();
 
                 User rightOp = alpha as User;
 
                 if (rightOp != null)
-                  return Name.CompareTo(rightOp.Name);
+                    return Name.CompareTo(rightOp.Name);
                 else
-                  throw new ArgumentException("[User]: CompareTo argument is not a Name");
+                    throw new ArgumentException("[User]: CompareTo argument is not a Name");
             }
             //need to finish toString
-            public override string toString()
+            public override string ToString()
             {//wasn't sure how to format toString
-                Console.WriteLine();
+                return "WORDS"; // Console.WriteLine();  THIS NEEDS TO BE FIXED
             }
 
-        }    
-        
+        }
+
         /* Subreddit class
          * by Margaret
          */
-         public class Subreddit : IComparable
-         {
+        public class Subreddit : IComparable
+        {
             private readonly uint id;
             private string name;
             private uint members;
@@ -117,17 +121,18 @@ namespace BigBadBolts_
             public uint Id
             {
                 get { return id; }
-                set { id = value; }
+                set { }// id = value; } added the '}' this needs to be fixed
             }
-                //i need to do unique id
+            //i need to do unique id
 
             public string Name
             {
                 get { return name; }
-                set {
+                set
+                {
                     if (value.Length >= 3 && value.Length <= 21)
                         name = value;
-                    }
+                }
             }
 
             public uint Members
@@ -143,7 +148,7 @@ namespace BigBadBolts_
             }
 
             //defult constructor
-            public Subreddit ()
+            public Subreddit()
             {
                 id = 0;
                 name = "";
@@ -153,7 +158,7 @@ namespace BigBadBolts_
             }
 
             //constructor to create new subreddit
-            public Subreddit (string conName)
+            public Subreddit(string conName)
             {
                 id = 0;
                 conName = "";
@@ -161,114 +166,114 @@ namespace BigBadBolts_
                 active = 0;
                 subPosts = null;
             }
-            
+
             //constructor for input file
-            public Subreddit (uint conId, string conName, uint conMembers, uint conActive){
+            public Subreddit(uint conId, string conName, uint conMembers, uint conActive)
+            {
                 id = conId;
                 name = conName;
                 members = conMembers;
-                active = conactive;
+                //active = conactive; conactive isnt working
                 subPosts = null;
-             }
+            }
 
             public int CompareTo(Object alpha)
             {
-                if ( alpha == null)
+                if (alpha == null)
                     throw new ArgumentNullException();
 
                 Subreddit rightOp = alpha as Subreddit;
 
-                if ( rightOp != null)
+                if (rightOp != null)
                     return Name.CompareTo(rightOp.Name);
                 else
                     throw new ArgumentException("[Subreddit]: CompareTo argument is not a name");
             }
-   
-            //Subreddit IEnumerable
-            public class Subreddit : IEnumerable
+        }
+
+
+        //Subreddit IEnumerable
+        public class SubredditEnum : IEnumerable
+        {
+            private Subreddit[] _subreddit;
+
+            public SubredditEnum(Subreddit[] subArray)
             {
-                private Subreddits[] _subreddit;
+                _subreddit = new Subreddit[_subreddit.Length];
 
-                public Subreddit(Subreddits[] subArray)
+                for (int i = 0; i < subArray.Length; i++)
                 {
-                    _subreddit = new Subreddits[subArrayArray.Length];
-
-                    for ( int i = 0; i < subArray.Length; i++)
-                    {
-                       _subreddit[i] = subArray[i];
-                    }
-
-                }
-
-                IEnumerator IEnumerable.GetEnumerator()
-                {
-                    return (IEnumerator) GetEnumerator();
-                }
-
-                public SubEnum GetEnumerator()
-                {
-                    return new SubEnum(_subreddit);
+                    _subreddit[i] = subArray[i];
                 }
 
             }
 
-            //Subreddit IEnumerator
-            public class SubEnum : IEnumerator
+            IEnumerator IEnumerable.GetEnumerator()
             {
-                public Subreddits[] _subreddit;
+                return (IEnumerator)GetEnumerator();
+            }
 
-                int position = -1;
+            public SubEnum GetEnumerator()
+            {
+                return new SubEnum(_subreddit);
+            }
 
-                public SubEnum(Subreddits[] list)
+        }
+
+        //Subreddit IEnumerator
+        public class SubEnum : IEnumerator
+        {
+            public Subreddit[] _subreddit;
+
+            int position = -1;
+
+            public SubEnum(Subreddit[] list)
+            {
+                _subreddit = list;
+            }
+
+            public bool MoveNext()
+            {
+                position++;
+                return (position < _subreddit.Length);
+            }
+
+            public void Reset()
+            {
+                position = -1;
+            }
+
+            object IEnumerator.Current
+            {
+                get
                 {
-                    _subreddit = list;
+                    return Current;
                 }
 
-                public bool MoveNext()
-                {
-                    position++;
-                    return (position < _subreddit.Length);
-                }
+            }
 
-                public void Reset()
+            public Subreddit Current
+            {
+                get
                 {
-                    position = -1;
-                }
-
-                object IEnumerator.Current
-                {
-                    get
+                    try
                     {
-                        return Current;
+                        return _subreddit[position];
                     }
 
-                }
-
-                public Subreddits Current
-                {
-                    get
+                    catch (IndexOutOfRangeException)
                     {
-                        try
-                        {
-                            return _subreddit[position];
-                        }
-
-                        catch (IndexOutOfRangeException)
-                        {
-                            throw new InvalidOperationException();
-                        }
-
+                        throw new InvalidOperationException();
                     }
 
                 }
 
             }
 
-         }
+        }
 
 
-
-         /**
+        /**
          * This is the class definition for the Post class. 
          * Created by Byron. 
          */
@@ -327,6 +332,12 @@ namespace BigBadBolts_
                 postComments = null;
             }
             ////////////////END CONSTREUCTOR ZONE///////////////////////////////////////////
+
+            public uint PostID
+            {
+                get { return postID; }
+            }
+
 
             public uint Score
             {
@@ -556,20 +567,15 @@ namespace BigBadBolts_
                 downVotes = _downVotes;
                 timeStamp = _timeStamp;
             }
-            /*Change to work for comments
-            Comment(string _title, uint _authorID, string _postContent, uint _subHome)
+            public Comment(string _content, uint _authorID, uint _parentID)
             {
-                postID = 0;
-                title = _title;
+                content = _content;
                 authorID = _authorID;
-                PostContent = _postContent;
-                subHome = _subHome;
+                parentID = _parentID;
                 upVotes = 1;
                 downVotes = 0;
-                weight = 0;
-                timeStamp = DateTime.Now;
-                postComments = null;
-            } */
+
+            } 
             ////////////////END CONSTREUCTOR ZONE///////////////////////////////////////////
 
 
@@ -839,19 +845,49 @@ namespace BigBadBolts_
                             case ("2"):  //List all posts from all subreddits
                                 break;
                             case ("3"):  //List all posts from a single subreddit
-                                foreach(Post test in myPosts)
-                                {
-                                    Console.WriteLine(test.Title.ToString());
-                                }
-                                Console.WriteLine(" ");
-                                foreach (Comment test in myComments)
-                                {
-                                    Console.WriteLine(test.Content.ToString());
-                                }
                                 break;
                             case ("4"):  //View comments of a single post
                                 break;
                             case ("5"):  //Add comment to post
+                                string postIDtoComment;
+                                string comment;
+                                bool found =false;
+                                Console.Write("Please enter the ID of the post you wish to add a comment to: ");
+                                postIDtoComment = Console.ReadLine();
+                                Console.WriteLine("");//blank line
+                                foreach (Post post in myPosts) //Search for the post to comment to
+                                {
+                                    if (post.PostID.ToString() == postIDtoComment)//Found the post to add a comment
+                                    {
+                                        found = true;
+                                        Console.WriteLine("Please enter a Comment: ");
+                                        try { 
+                                        comment = Console.ReadLine();
+                                            if (vulgarityChecker("comment"))
+                                            {
+                                                throw new FoulLanguageException();
+                                            }
+                                        }
+                                        catch (FoulLanguageException fle)
+                                        {
+                                            Console.WriteLine(fle.ToString());
+                                            break;
+                                        }
+                                        Comment commentToAdd = new Comment(
+                                            comment, //content
+                                            0001, //authorID //THIS IS ROGNESS USER
+                                            post.PostID //parentID
+                                            );
+                                        myComments.Add(commentToAdd);
+                                        Console.WriteLine("");//blank line
+                                        Console.WriteLine("Comment was added successfully to post : " + postIDtoComment);
+                                        Console.WriteLine("");//blank line
+                                        break;
+                                    }
+                                }
+                                //We did not find the postID
+                                if (!found)
+                                    Console.WriteLine("The postID entered was not found.");
                                 break;
                             case ("6"):  //Add reply to comment
                                 break;
