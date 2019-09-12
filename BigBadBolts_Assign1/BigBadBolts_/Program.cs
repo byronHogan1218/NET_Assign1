@@ -220,7 +220,7 @@ namespace BigBadBolts_
 
             public override string ToString()
             {
-                return this.name + '\n';
+                return '\t' + "<" + this.id + "> " + this.name + " -- (" + this.active + "/" + this.members + ")";
             }
 
         }
@@ -484,7 +484,16 @@ namespace BigBadBolts_
 
             public override string ToString()
             {
-                return this.title + '\n' + "\t" + this.PostContent + '\n';
+                string authorName = "";
+                foreach(User item in myUsers)
+                {
+                    if (item.Id == this.authorID)
+                        authorName = item.Name;
+                }
+                if (authorName.Length == 0)
+                    authorName = this.authorID.ToString();
+
+                return "\t<" + this.PostID + "> [" + this.subHome + "] (" + this.Score + ") " + this.Title + " " + this.postContent + " - " + authorName + "|" + this.timeStamp.ToString() + "|";
             }
         }//End post class
 
@@ -855,7 +864,7 @@ namespace BigBadBolts_
                 while (currentLine != null)
                 {
                     tokens = currentLine.Split('\t');
-
+                 
                     Subreddit newSub = new Subreddit(//build the subreddit
                       UInt32.Parse(tokens[0]),//id
                       tokens[1],//name
@@ -864,9 +873,9 @@ namespace BigBadBolts_
                     );
 
                     mySubReddits.Add(newSub);
-                }
 
-                currentLine = inFile.ReadLine(); //get the next line
+                    currentLine = inFile.ReadLine(); //get the next line
+                }
             }
 
             //This will get the user information and store it in the user object
@@ -885,9 +894,8 @@ namespace BigBadBolts_
                     );
 
                     myUsers.Add(newUser);
+                    currentLine = inFile.ReadLine(); //get the next line
                 }
-
-                currentLine = inFile.ReadLine(); //get the next line
             }
 
         }
@@ -901,12 +909,6 @@ namespace BigBadBolts_
             bool exitProgram = false;
             bool found = false;
             string userInput;
-
-            Subreddit adder = new Subreddit("test");
-
-            mySubReddits.Add(adder);
-                
-                
 
             //Read the input files here to build the objects
             getFileInput( myPosts, myComments, mySubReddits, myUsers);
@@ -930,6 +932,7 @@ namespace BigBadBolts_
 
                 userInput = Console.ReadLine();
                 Console.Clear();
+                Console.WriteLine(userInput);
 
                 //Error check the user input
                 if (userInput.Length == 1 || userInput.ToLower() == "quit" || userInput.ToLower() == "exit") // determines if the user enter acceptable criteria
@@ -952,15 +955,20 @@ namespace BigBadBolts_
                             case ("1"):  //List all subreddits
                                 foreach (Subreddit currentReddit in mySubReddits)
                                 {
+                                    Console.WriteLine("Name -- (Active Members / Total Members)");
                                     Console.WriteLine(currentReddit.ToString());
+                                    Console.WriteLine("");//Blank Line
                                 }
                                 break;
                             case ("2"):  //List all posts from all subreddits
+                                Console.WriteLine("<ID> [Subreddit] (Score) Title + PostContent - PosterName |TimeStamp|");
+                                Console.WriteLine("");//Blank Line
                                 foreach (Subreddit currentReddit in mySubReddits)
                                 {
                                     foreach (Post redditPost in currentReddit.SubPosts) //GET NULL ERROR HERE
-                                    {
+                                    { 
                                         Console.WriteLine(redditPost.ToString()); // Might need to override the tostring method for this
+                                        Console.WriteLine("");//Blank Line
                                     }
                                 }
                                 break;
@@ -1206,7 +1214,7 @@ namespace BigBadBolts_
                 }
 
             }
-
+            Console.Clear();
         }
     }
 }
