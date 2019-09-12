@@ -137,6 +137,11 @@ namespace BigBadBolts_
                 }
             }
 
+            public string Title
+            {
+                get { return name; }
+            }
+
             public string Name
             {
                 get { return name; }
@@ -344,6 +349,19 @@ namespace BigBadBolts_
                 postComments = null;
             }
             ////////////////END CONSTREUCTOR ZONE///////////////////////////////////////////
+
+            public uint PostAuthorId
+            {
+                get { return authorID; }
+            }
+
+            public SortedSet<Comment> PostComments
+            {
+                get
+                {
+                    return postComments;
+                }
+            }
 
             public uint PostID
             {
@@ -893,6 +911,28 @@ namespace BigBadBolts_
                                     Console.WriteLine("The Subbreddit ID entered was not found.");
                                 break;
                             case ("4"):  //View comments of a single post
+                                string postIDToView;
+                                found = false;
+                                Console.Write("Please enter the ID of the Post you wish to view: ");
+                                postIDToView = Console.ReadLine();
+                                Console.WriteLine("");//blank line
+                                foreach (Post post in myPosts) //Search for the post to view
+                                {
+                                    if (post.PostID.ToString() == postIDToView)//Found the post to view
+                                    {
+                                        found = true;
+                                        foreach (Comment commentOfPost in post.PostComments)
+                                        {
+                                            Console.WriteLine("");//blank line
+                                            Console.WriteLine(commentOfPost.ToString());//This might need to overriden
+                                            Console.WriteLine("");//blank line
+                                        }
+                                        break;
+                                    }
+                                }
+                                //We did not find the Post_ID
+                                if (!found)
+                                    Console.WriteLine("The Post ID entered was not found.");
                                 break;
                             case ("5"):  //Add comment to post
                                 string postIDtoComment;
@@ -909,7 +949,7 @@ namespace BigBadBolts_
                                         Console.WriteLine("Please enter a Comment: ");
                                         try { 
                                         comment = Console.ReadLine();
-                                            if (vulgarityChecker("comment"))
+                                            if (vulgarityChecker(comment))
                                             {
                                                 throw new FoulLanguageException();
                                             }
@@ -938,8 +978,97 @@ namespace BigBadBolts_
                             case ("6"):  //Add reply to comment
                                 break;
                             case ("7"):  //Create new post
+                                found = false;
+                                string postTitle;
+                                string postContent;
+                                string newPostTitle;
+                                string newPostContent;
+                                string newPostSubbreddit;
+                                Console.WriteLine("Please enter the name of the Subbreddit you want to create a post to: ");
+                                newPostSubbreddit = Console.ReadLine();
+                                Console.WriteLine("");//blank line
+                                foreach (Subreddit subredditGettingPost in mySubReddits) //Search for the subreddit to post to
+                                {
+                                    if (subredditGettingPost.Title.ToString() == newPostSubbreddit)
+                                    { 
+                                        found = true;
+                                        Console.WriteLine("Enter the title of your new Post: ");
+                                        try
+                                        {
+                                            newPostTitle = Console.ReadLine();
+                                            Console.WriteLine("");//blank line
+                                            if (vulgarityChecker(newPostTitle))
+                                            {
+                                                throw new FoulLanguageException();
+                                            }
+                                        }
+                                        catch (FoulLanguageException fle)
+                                        {
+                                            Console.WriteLine(fle.ToString());
+                                            break;
+                                        }
+                                        Console.WriteLine("Please enter any content you would like to add: ");
+                                        try
+                                        {
+                                            newPostContent = Console.ReadLine();
+                                            Console.WriteLine("");//blank line
+                                            if (vulgarityChecker(newPostContent))
+                                            {
+                                                throw new FoulLanguageException();
+                                            }
+                                        }
+                                        catch (FoulLanguageException fle)
+                                        {
+                                            Console.WriteLine(fle.ToString());
+                                            break;
+                                        }
+                                        //Appropriate post was completed,add it to the SortedSet
+                                        Post postToAdd = new Post( 
+                                            newPostTitle, //content
+                                            0001, //authorID //THIS IS ROGNESS USER
+                                            newPostContent, //post content
+                                            subredditGettingPost.Id //Subbreddit home
+                                            );
+                                        myPosts.Add(postToAdd);
+                                        Console.WriteLine("");//blank line
+                                        Console.WriteLine("Post was added successfully to subbreddit : " + subredditGettingPost.Title.ToString());
+                                        Console.WriteLine("");//blank line
+                                        break;
+                                    }
+                                }
+                                //We did not find the Subbreddit to add a post to
+                                if (!found)
+                                    Console.WriteLine("The Subreddit name entered was not found.");
                                 break;
                             case ("8"): //Deletes post
+                                string postIDtoDelete;
+                                found = false;
+                                Console.Write("Please enter the ID of the post you wish to delete: ");
+                                postIDtoDelete = Console.ReadLine();
+                                Console.WriteLine("");//blank line
+                                foreach (Post post in myPosts) //Search for the post to comment to
+                                {
+                                    if (post.PostID.ToString() == postIDtoDelete)//Found the post to delete
+                                    {
+                                        found = true;
+                                        if (post.PostAuthorId == 0001) //This is user rognesses id,its faked we are logged in as him. This would need to change in the future to User.GET_ID() (UNWRITTEN)
+                                        {      //Can delete the post because it was written by the USER
+                                            if (myPosts.Remove(post)) //Idk if this works
+                                                Console.WriteLine("The post was succesfully deleted");
+                                            else
+                                                Console.WriteLine("Tried to delete, but something went wrong.");
+                                            break;
+                                        }
+                                        else //Post is not written by the logged on user aka user 0001 rogness
+                                        {
+                                            Console.WriteLine("Sorry but you are not allowed to delete other user's Posts.");
+                                            break;
+                                        }
+                                    }
+                                }
+                                //We did not find the postID
+                                if (!found)
+                                    Console.WriteLine("The postID entered was not found.");
                                 break;
                             case ("9"): //Quits
                                 exitProgram = true;
