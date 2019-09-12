@@ -18,6 +18,10 @@ namespace BigBadBolts_
         };
         static public SortedSet<Post> myPosts = new SortedSet<Post>();
         static public SortedSet<Comment> myComments = new SortedSet<Comment>();
+        static public SortedSet<Subreddit> mySubReddits = new SortedSet<Subreddit>();
+        static public SortedSet<User> myUsers = new SortedSet<User>();
+
+
 
 
         /* The User class
@@ -124,6 +128,14 @@ namespace BigBadBolts_
                 set { }// id = value; } added the '}' this needs to be fixed
             }
             //i need to do unique id
+
+            public SortedSet<Post> SubPosts
+            {
+                get
+                {
+                    return subPosts; 
+                }
+            }
 
             public string Name
             {
@@ -796,6 +808,7 @@ namespace BigBadBolts_
         static void Main(string[] args) //Need to implement reading in input files
         {
             bool exitProgram = false;
+            bool found = false;
             string userInput;
 
 
@@ -841,17 +854,50 @@ namespace BigBadBolts_
                                 Console.WriteLine("You have entered something incorrect. Please try again. \n");
                                 break;
                             case ("1"):  //List all subreddits
+                                foreach (Subreddit currentReddit in mySubReddits)
+                                {
+                                    Console.WriteLine(currentReddit.ToString());
+                                }
                                 break;
                             case ("2"):  //List all posts from all subreddits
+                                foreach (Subreddit currentReddit in mySubReddits)
+                                {
+                                    foreach (Post redditPost in currentReddit.SubPosts)
+                                    {
+                                        Console.WriteLine(redditPost.ToString()); // Might need to override the tostring method for this
+                                    }
+                                }
                                 break;
                             case ("3"):  //List all posts from a single subreddit
+                                string subbredditIDToView;
+                                found = false;
+                                Console.Write("Please enter the ID of the Subbreddit you wish to view: ");
+                                subbredditIDToView = Console.ReadLine();
+                                Console.WriteLine("");//blank line
+                                foreach (Subreddit subreddit in mySubReddits) //Search for the subbreddit to view
+                                {
+                                    if (subreddit.Id.ToString() == subbredditIDToView)//Found the subreddit to view
+                                    {
+                                        found = true;
+                                        foreach (Post subPost in subreddit.SubPosts)
+                                        {
+                                            Console.WriteLine("");//blank line
+                                            Console.WriteLine(subPost.ToString());//This might need to overriden
+                                            Console.WriteLine("");//blank line
+                                        }
+                                        break;
+                                    }
+                                }
+                                //We did not find the SubReddit_ID
+                                if (!found)
+                                    Console.WriteLine("The Subbreddit ID entered was not found.");
                                 break;
                             case ("4"):  //View comments of a single post
                                 break;
                             case ("5"):  //Add comment to post
                                 string postIDtoComment;
                                 string comment;
-                                bool found =false;
+                                found =false;
                                 Console.Write("Please enter the ID of the post you wish to add a comment to: ");
                                 postIDtoComment = Console.ReadLine();
                                 Console.WriteLine("");//blank line
