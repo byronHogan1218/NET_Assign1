@@ -1,4 +1,15 @@
-﻿using System;
+﻿/*******************************************************************
+*                                                                  *
+*  CSCI 473-1/504-1       Assignment 1                Fall   2019  *
+*                                                                  *
+*                                                                  *
+*  Program Name:  Reddit                                           *
+*                                                                  *
+*  Programmer:    Byron Hogan,                                     *
+*                 Margaret Higginbotham, z1793581                  *
+*                                                                  *
+*******************************************************************/
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -18,6 +29,10 @@ namespace BigBadBolts_
         };
         static public SortedSet<Post> myPosts = new SortedSet<Post>();
         static public SortedSet<Comment> myComments = new SortedSet<Comment>();
+        static public SortedSet<Subreddit> mySubReddits = new SortedSet<Subreddit>();
+        static public SortedSet<User> myUsers = new SortedSet<User>();
+
+
 
 
         /* The User class
@@ -60,7 +75,7 @@ namespace BigBadBolts_
             }
 
             // default constructor for User
-            User()
+            public User()
             {
                 id = 0;
                 name = "";
@@ -69,7 +84,7 @@ namespace BigBadBolts_
             }
 
             // constructor for User when all properties are set
-            User(uint conId, string conName, int conPost, int conCommon)
+            public User(uint conId, string conName, int conPost, int conCommon)
             {
                 id = conId;
                 name = conName;
@@ -78,7 +93,7 @@ namespace BigBadBolts_
             }
 
             //Used to create new user
-            User(string conName)
+            public User(string conName)
             {
                 id = 0;
                 name = conName;
@@ -125,6 +140,19 @@ namespace BigBadBolts_
             }
             //i need to do unique id
 
+            public SortedSet<Post> SubPosts
+            {
+                get
+                {
+                    return subPosts; 
+                }
+            }
+
+            public string Title
+            {
+                get { return name; }
+            }
+
             public string Name
             {
                 get { return name; }
@@ -154,17 +182,17 @@ namespace BigBadBolts_
                 name = "";
                 members = 0;
                 active = 0;
-                subPosts = null;
+                subPosts = myPosts;
             }
 
             //constructor to create new subreddit
             public Subreddit(string conName)
             {
                 id = 0;
-                conName = "";
+                name = conName;
                 members = 0;
                 active = 0;
-                subPosts = null;
+                subPosts = myPosts;
             }
 
             //constructor for input file
@@ -173,8 +201,8 @@ namespace BigBadBolts_
                 id = conId;
                 name = conName;
                 members = conMembers;
-                //active = conactive; conactive isnt working
-                subPosts = null;
+                active = conActive;
+                subPosts = myPosts;
             }
 
             public int CompareTo(Object alpha)
@@ -189,6 +217,12 @@ namespace BigBadBolts_
                 else
                     throw new ArgumentException("[Subreddit]: CompareTo argument is not a name");
             }
+
+            public override string ToString()
+            {
+                return '\t' + "<" + this.id + "> " + this.name + " -- (" + this.active + "/" + this.members + ")";
+            }
+
         }
 
 
@@ -333,6 +367,19 @@ namespace BigBadBolts_
             }
             ////////////////END CONSTREUCTOR ZONE///////////////////////////////////////////
 
+            public uint PostAuthorId
+            {
+                get { return authorID; }
+            }
+
+            public SortedSet<Comment> PostComments
+            {
+                get
+                {
+                    return postComments;
+                }
+            }
+
             public uint PostID
             {
                 get { return postID; }
@@ -435,7 +482,19 @@ namespace BigBadBolts_
                 }
             }
 
+            public override string ToString()
+            {
+                string authorName = "";
+                foreach(User item in myUsers)
+                {
+                    if (item.Id == this.authorID)
+                        authorName = item.Name;
+                }
+                if (authorName.Length == 0)
+                    authorName = this.authorID.ToString();
 
+                return "\t<" + this.PostID + "> [" + this.subHome + "] (" + this.Score + ") " + this.Title + " " + this.postContent + " - " + authorName + "|" + this.timeStamp.ToString() + "|";
+            }
         }//End post class
 
         /** Collection of Post objects. This class
@@ -533,6 +592,10 @@ namespace BigBadBolts_
             private SortedSet<Comment> commentReplies;
             private uint indentLevel;
 
+            public uint CommentID
+            {
+                get { return commentID;  }
+            }
             public string Content
             {
                 get { return this.content; }
@@ -596,6 +659,11 @@ namespace BigBadBolts_
                 {
                     throw new ArgumentException("[Comment]:CompareTo argument is not a Comment Object.");
                 }
+            }
+
+            public override string ToString()
+            {
+                return this.content + '\n';
             }
 
         }//End comment class
@@ -713,8 +781,10 @@ namespace BigBadBolts_
          * This function gets and reads input from files provided to us. 
          * Parameters: myPosts- a SortedSet of post objects to fill with post info
          *             myComments - a SortedSet of Comment objects to fill with comment info
+         *             mySubreddits - Sorted set of Subreddit objects
+         *             myUsers - Sorted set of user objects
          */
-         static public void getFileInput(SortedSet<Post> myPosts, SortedSet<Comment> myComments)
+         static public void getFileInput(SortedSet<Post> myPosts, SortedSet<Comment> myComments, SortedSet<Subreddit> mySubreddits, SortedSet<User> myUsers)
         {
             string currentLine;
             string[] tokens;
@@ -787,6 +857,47 @@ namespace BigBadBolts_
                 }
             }
 
+            //This will read the the subreddit file and build the objects from them
+            using (StreamReader inFile = new StreamReader("..//..//..//subreddits.txt"))
+            {
+                currentLine = inFile.ReadLine(); //prime the read
+                while (currentLine != null)
+                {
+                    tokens = currentLine.Split('\t');
+                 
+                    Subreddit newSub = new Subreddit(//build the subreddit
+                      UInt32.Parse(tokens[0]),//id
+                      tokens[1],//name
+                      UInt32.Parse(tokens[2]), //Members
+                      UInt32.Parse(tokens[3]) //Active
+                    );
+
+                    mySubReddits.Add(newSub);
+
+                    currentLine = inFile.ReadLine(); //get the next line
+                }
+            }
+
+            //This will get the user information and store it in the user object
+            using (StreamReader inFile = new StreamReader("..//..//..//users.txt"))
+            {
+                currentLine = inFile.ReadLine(); //prime the read
+                while (currentLine != null)
+                {
+                    tokens = currentLine.Split('\t');
+
+                    User newUser = new User(//build the user
+                      UInt32.Parse(tokens[0]),//id
+                      tokens[1],//name
+                      Int32.Parse(tokens[2]), //postScore
+                      Int32.Parse(tokens[3]) //commentScore
+                    );
+
+                    myUsers.Add(newUser);
+                    currentLine = inFile.ReadLine(); //get the next line
+                }
+            }
+
         }
 
         /**
@@ -796,11 +907,11 @@ namespace BigBadBolts_
         static void Main(string[] args) //Need to implement reading in input files
         {
             bool exitProgram = false;
+            bool found = false;
             string userInput;
 
-
             //Read the input files here to build the objects
-            getFileInput( myPosts, myComments);
+            getFileInput( myPosts, myComments, mySubReddits, myUsers);
 
             Console.WriteLine("Welcome to CSCI 473 Assignment 1.");
 
@@ -821,6 +932,7 @@ namespace BigBadBolts_
 
                 userInput = Console.ReadLine();
                 Console.Clear();
+                Console.WriteLine(userInput);
 
                 //Error check the user input
                 if (userInput.Length == 1 || userInput.ToLower() == "quit" || userInput.ToLower() == "exit") // determines if the user enter acceptable criteria
@@ -841,17 +953,77 @@ namespace BigBadBolts_
                                 Console.WriteLine("You have entered something incorrect. Please try again. \n");
                                 break;
                             case ("1"):  //List all subreddits
+                                foreach (Subreddit currentReddit in mySubReddits)
+                                {
+                                    Console.WriteLine("Name -- (Active Members / Total Members)");
+                                    Console.WriteLine(currentReddit.ToString());
+                                    Console.WriteLine("");//Blank Line
+                                }
                                 break;
                             case ("2"):  //List all posts from all subreddits
+                                Console.WriteLine("<ID> [Subreddit] (Score) Title + PostContent - PosterName |TimeStamp|");
+                                Console.WriteLine("");//Blank Line
+                                foreach (Subreddit currentReddit in mySubReddits)
+                                {
+                                    foreach (Post redditPost in currentReddit.SubPosts) //GET NULL ERROR HERE
+                                    { 
+                                        Console.WriteLine(redditPost.ToString()); // Might need to override the tostring method for this
+                                        Console.WriteLine("");//Blank Line
+                                    }
+                                }
                                 break;
                             case ("3"):  //List all posts from a single subreddit
+                                string subbredditIDToView;
+                                found = false;
+                                Console.Write("Please enter the ID of the Subbreddit you wish to view: ");
+                                subbredditIDToView = Console.ReadLine();
+                                Console.WriteLine("");//blank line
+                                foreach (Subreddit subreddit in mySubReddits) //Search for the subbreddit to view
+                                {
+                                    if (subreddit.Id.ToString() == subbredditIDToView)//Found the subreddit to view
+                                    {
+                                        found = true;
+                                        foreach (Post subPost in subreddit.SubPosts)
+                                        {
+                                            Console.WriteLine("");//blank line
+                                            Console.WriteLine(subPost.ToString());//This might need to overriden
+                                            Console.WriteLine("");//blank line
+                                        }
+                                        break;
+                                    }
+                                }
+                                //We did not find the SubReddit_ID
+                                if (!found)
+                                    Console.WriteLine("The Subbreddit ID entered was not found.");
                                 break;
                             case ("4"):  //View comments of a single post
+                                string postIDToView;
+                                found = false;
+                                Console.Write("Please enter the ID of the Post you wish to view: ");
+                                postIDToView = Console.ReadLine();
+                                Console.WriteLine("");//blank line
+                                foreach (Post post in myPosts) //Search for the post to view
+                                {
+                                    if (post.PostID.ToString() == postIDToView)//Found the post to view
+                                    {
+                                        found = true;
+                                        foreach (Comment commentOfPost in post.PostComments)
+                                        {
+                                            Console.WriteLine("");//blank line
+                                            Console.WriteLine(commentOfPost.ToString());//This might need to overriden
+                                            Console.WriteLine("");//blank line
+                                        }
+                                        break;
+                                    }
+                                }
+                                //We did not find the Post_ID
+                                if (!found)
+                                    Console.WriteLine("The Post ID entered was not found.");
                                 break;
                             case ("5"):  //Add comment to post
                                 string postIDtoComment;
                                 string comment;
-                                bool found =false;
+                                found =false;
                                 Console.Write("Please enter the ID of the post you wish to add a comment to: ");
                                 postIDtoComment = Console.ReadLine();
                                 Console.WriteLine("");//blank line
@@ -863,7 +1035,7 @@ namespace BigBadBolts_
                                         Console.WriteLine("Please enter a Comment: ");
                                         try { 
                                         comment = Console.ReadLine();
-                                            if (vulgarityChecker("comment"))
+                                            if (vulgarityChecker(comment))
                                             {
                                                 throw new FoulLanguageException();
                                             }
@@ -890,10 +1062,137 @@ namespace BigBadBolts_
                                     Console.WriteLine("The postID entered was not found.");
                                 break;
                             case ("6"):  //Add reply to comment
+                                string commentIDToReplyTo;
+                                string replyContent;
+                                found = false;
+                                Console.Write("Please enter the ID of the comment you wish to reply to: ");
+                                commentIDToReplyTo = Console.ReadLine();
+                                Console.WriteLine("");//blank line
+                                foreach (Comment commentToReply in myComments) //Search for the post to comment to
+                                {
+                                    if (commentToReply.CommentID.ToString() == commentIDToReplyTo)//Found the comment to reply to
+                                    {
+                                        found = true;
+                                        Console.WriteLine("Please enter your reply: ");
+                                        try
+                                        {
+                                            replyContent = Console.ReadLine();
+                                            if (vulgarityChecker(replyContent))
+                                            {
+                                                throw new FoulLanguageException();
+                                            }
+                                        }
+                                        catch (FoulLanguageException fle)
+                                        {
+                                            Console.WriteLine(fle.ToString());
+                                            break;
+                                        }
+                                        Comment replyToAdd = new Comment(
+                                            replyContent, //content
+                                            0001, //authorID //THIS IS ROGNESS USER
+                                            commentToReply.CommentID //parentID
+                                            );
+                                        myComments.Add(replyToAdd);
+                                        Console.WriteLine("");//blank line
+                                        Console.WriteLine("Reply was added successfully to comment with ID : " + commentIDToReplyTo);
+                                        Console.WriteLine("");//blank line
+                                        break;
+                                    }
+                                }
+                                //We did not find the comment
+                                if (!found)
+                                    Console.WriteLine("The commentID entered was not found.");
                                 break;
                             case ("7"):  //Create new post
+                                found = false;
+                                string newPostTitle;
+                                string newPostContent;
+                                string newPostSubbreddit;
+                                Console.WriteLine("Please enter the name of the Subbreddit you want to create a post to: ");
+                                newPostSubbreddit = Console.ReadLine();
+                                Console.WriteLine("");//blank line
+                                foreach (Subreddit subredditGettingPost in mySubReddits) //Search for the subreddit to post to
+                                {
+                                    if (subredditGettingPost.Title.ToString() == newPostSubbreddit)
+                                    { 
+                                        found = true;
+                                        Console.WriteLine("Enter the title of your new Post: ");
+                                        try
+                                        {
+                                            newPostTitle = Console.ReadLine();
+                                            Console.WriteLine("");//blank line
+                                            if (vulgarityChecker(newPostTitle))
+                                            {
+                                                throw new FoulLanguageException();
+                                            }
+                                        }
+                                        catch (FoulLanguageException fle)
+                                        {
+                                            Console.WriteLine(fle.ToString());
+                                            break;
+                                        }
+                                        Console.WriteLine("Please enter any content you would like to add: ");
+                                        try
+                                        {
+                                            newPostContent = Console.ReadLine();
+                                            Console.WriteLine("");//blank line
+                                            if (vulgarityChecker(newPostContent))
+                                            {
+                                                throw new FoulLanguageException();
+                                            }
+                                        }
+                                        catch (FoulLanguageException fle)
+                                        {
+                                            Console.WriteLine(fle.ToString());
+                                            break;
+                                        }
+                                        //Appropriate post was completed,add it to the SortedSet
+                                        Post postToAdd = new Post( 
+                                            newPostTitle, //content
+                                            0001, //authorID //THIS IS ROGNESS USER
+                                            newPostContent, //post content
+                                            subredditGettingPost.Id //Subbreddit home
+                                            );
+                                        myPosts.Add(postToAdd);
+                                        Console.WriteLine("");//blank line
+                                        Console.WriteLine("Post was added successfully to subbreddit : " + subredditGettingPost.Title.ToString());
+                                        Console.WriteLine("");//blank line
+                                        break;
+                                    }
+                                }
+                                //We did not find the Subbreddit to add a post to
+                                if (!found)
+                                    Console.WriteLine("The Subreddit name entered was not found.");
                                 break;
                             case ("8"): //Deletes post
+                                string postIDtoDelete;
+                                found = false;
+                                Console.Write("Please enter the ID of the post you wish to delete: ");
+                                postIDtoDelete = Console.ReadLine();
+                                Console.WriteLine("");//blank line
+                                foreach (Post post in myPosts) //Search for the post to comment to
+                                {
+                                    if (post.PostID.ToString() == postIDtoDelete)//Found the post to delete
+                                    {
+                                        found = true;
+                                        if (post.PostAuthorId == 0001) //This is user rognesses id,its faked we are logged in as him. This would need to change in the future to User.GET_ID() (UNWRITTEN)
+                                        {      //Can delete the post because it was written by the USER
+                                            if (myPosts.Remove(post)) //Idk if this works
+                                                Console.WriteLine("The post was succesfully deleted");
+                                            else
+                                                Console.WriteLine("Tried to delete, but something went wrong.");
+                                            break;
+                                        }
+                                        else //Post is not written by the logged on user aka user 0001 rogness
+                                        {
+                                            Console.WriteLine("Sorry but you are not allowed to delete other user's Posts.");
+                                            break;
+                                        }
+                                    }
+                                }
+                                //We did not find the postID
+                                if (!found)
+                                    Console.WriteLine("The postID entered was not found.");
                                 break;
                             case ("9"): //Quits
                                 exitProgram = true;
@@ -915,7 +1214,7 @@ namespace BigBadBolts_
                 }
 
             }
-
+            Console.Clear();
         }
     }
 }
