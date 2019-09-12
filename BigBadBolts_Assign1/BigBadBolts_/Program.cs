@@ -171,17 +171,17 @@ namespace BigBadBolts_
                 name = "";
                 members = 0;
                 active = 0;
-                subPosts = null;
+                subPosts = myPosts;
             }
 
             //constructor to create new subreddit
             public Subreddit(string conName)
             {
                 id = 0;
-                conName = "";
+                name = conName;
                 members = 0;
                 active = 0;
-                subPosts = null;
+                subPosts = myPosts;
             }
 
             //constructor for input file
@@ -191,7 +191,7 @@ namespace BigBadBolts_
                 name = conName;
                 members = conMembers;
                 //active = conactive; conactive isnt working
-                subPosts = null;
+                subPosts = myPosts;
             }
 
             public int CompareTo(Object alpha)
@@ -206,6 +206,12 @@ namespace BigBadBolts_
                 else
                     throw new ArgumentException("[Subreddit]: CompareTo argument is not a name");
             }
+
+            public override string ToString()
+            {
+                return this.name + '\n';
+            }
+
         }
 
 
@@ -465,7 +471,10 @@ namespace BigBadBolts_
                 }
             }
 
-
+            public override string ToString()
+            {
+                return this.title + '\n' + "\t" + this.PostContent + '\n';
+            }
         }//End post class
 
         /** Collection of Post objects. This class
@@ -563,6 +572,10 @@ namespace BigBadBolts_
             private SortedSet<Comment> commentReplies;
             private uint indentLevel;
 
+            public uint CommentID
+            {
+                get { return commentID;  }
+            }
             public string Content
             {
                 get { return this.content; }
@@ -829,6 +842,11 @@ namespace BigBadBolts_
             bool found = false;
             string userInput;
 
+            Subreddit adder = new Subreddit("test");
+
+            mySubReddits.Add(adder);
+                
+                
 
             //Read the input files here to build the objects
             getFileInput( myPosts, myComments);
@@ -880,7 +898,7 @@ namespace BigBadBolts_
                             case ("2"):  //List all posts from all subreddits
                                 foreach (Subreddit currentReddit in mySubReddits)
                                 {
-                                    foreach (Post redditPost in currentReddit.SubPosts)
+                                    foreach (Post redditPost in currentReddit.SubPosts) //GET NULL ERROR HERE
                                     {
                                         Console.WriteLine(redditPost.ToString()); // Might need to override the tostring method for this
                                     }
@@ -976,11 +994,49 @@ namespace BigBadBolts_
                                     Console.WriteLine("The postID entered was not found.");
                                 break;
                             case ("6"):  //Add reply to comment
+                                string commentIDToReplyTo;
+                                string replyContent;
+                                found = false;
+                                Console.Write("Please enter the ID of the comment you wish to reply to: ");
+                                commentIDToReplyTo = Console.ReadLine();
+                                Console.WriteLine("");//blank line
+                                foreach (Comment commentToReply in myComments) //Search for the post to comment to
+                                {
+                                    if (commentToReply.CommentID.ToString() == commentIDToReplyTo)//Found the comment to reply to
+                                    {
+                                        found = true;
+                                        Console.WriteLine("Please enter your reply: ");
+                                        try
+                                        {
+                                            replyContent = Console.ReadLine();
+                                            if (vulgarityChecker(replyContent))
+                                            {
+                                                throw new FoulLanguageException();
+                                            }
+                                        }
+                                        catch (FoulLanguageException fle)
+                                        {
+                                            Console.WriteLine(fle.ToString());
+                                            break;
+                                        }
+                                        Comment replyToAdd = new Comment(
+                                            replyContent, //content
+                                            0001, //authorID //THIS IS ROGNESS USER
+                                            commentToReply.CommentID //parentID
+                                            );
+                                        myComments.Add(replyToAdd);
+                                        Console.WriteLine("");//blank line
+                                        Console.WriteLine("Reply was added successfully to comment with ID : " + commentIDToReplyTo);
+                                        Console.WriteLine("");//blank line
+                                        break;
+                                    }
+                                }
+                                //We did not find the comment
+                                if (!found)
+                                    Console.WriteLine("The commentID entered was not found.");
                                 break;
                             case ("7"):  //Create new post
                                 found = false;
-                                string postTitle;
-                                string postContent;
                                 string newPostTitle;
                                 string newPostContent;
                                 string newPostSubbreddit;
