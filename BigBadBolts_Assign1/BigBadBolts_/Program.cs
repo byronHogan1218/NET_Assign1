@@ -1140,7 +1140,6 @@ namespace BigBadBolts_
                                             0001, //authorID //THIS IS ROGNESS USER
                                             post.PostID //parentID
                                             );
-                                        Console.WriteLine(comment + post.PostID.ToString());
                                         if (!myComments.Add(commentToAdd))//;
                                             Console.WriteLine("");
                                         else
