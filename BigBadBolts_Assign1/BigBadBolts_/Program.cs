@@ -29,6 +29,8 @@ namespace BigBadBolts_
         };
         static public SortedSet<Post> myPosts = new SortedSet<Post>();
         static public SortedSet<Comment> myComments = new SortedSet<Comment>();
+        static public SortedSet<Comment> myCommentsReplies = new SortedSet<Comment>();
+
         static public SortedSet<Subreddit> mySubReddits = new SortedSet<Subreddit>();
         static public SortedSet<User> myUsers = new SortedSet<User>();
 
@@ -50,7 +52,6 @@ namespace BigBadBolts_
             {
                 get { return id; }
             }
-            //i need to add unique id requirement
 
             public string Name
             {
@@ -77,7 +78,7 @@ namespace BigBadBolts_
             // default constructor for User
             public User()
             {
-                id = 0;
+                id = (uint)myUsers.Count + 1;
                 name = "";
                 postScore = 0;
                 commonScore = 0;
@@ -95,7 +96,7 @@ namespace BigBadBolts_
             //Used to create new user
             public User(string conName)
             {
-                id = 0;
+                id = (uint)myUsers.Count + 1;
                 name = conName;
                 postScore = 0;
                 commonScore = 0;
@@ -178,7 +179,7 @@ namespace BigBadBolts_
             //defult constructor
             public Subreddit()
             {
-                id = 0;
+                id = (uint)mySubReddits.Count + 1;
                 name = "";
                 members = 0;
                 active = 0;
@@ -188,7 +189,7 @@ namespace BigBadBolts_
             //constructor to create new subreddit
             public Subreddit(string conName)
             {
-                id = 0;
+                id = (uint)mySubReddits.Count + 1;//A somewhat unique identifier
                 name = conName;
                 members = 0;
                 active = 0;
@@ -327,7 +328,7 @@ namespace BigBadBolts_
             /////////CONSTRUCTOR ZONE////////////////////////////////////////////////////////
             public Post() //DEFAULT CONSTRUCTOR....may need some tweaks
             {
-                postID = 0;
+                postID = (uint)myPosts.Count + 1;
                 title = "";
                 authorID = 0;
                 postContent = "";
@@ -336,7 +337,7 @@ namespace BigBadBolts_
                 downVotes = 0;
                 weight = 0;
                 timeStamp = DateTime.Now;
-                postComments = null;
+                postComments = myComments;
             }
             //This is used to create a new post
             public Post(uint _postID, uint _authorID, string _title, string _postContent, uint _subHome, uint _upVotes, uint _downVotes, uint _weight, DateTime _timeStamp)
@@ -350,11 +351,11 @@ namespace BigBadBolts_
                 downVotes = _downVotes;
                 weight = _weight;
                 timeStamp = _timeStamp;
-               // postComments = _postComments as SortedSet<Comment>;
+                postComments = myComments;
             }
             public Post(string _title, uint _authorID, string _postContent, uint _subHome)
             {
-                postID = 0;
+                postID = (uint)myPosts.Count + 1;
                 title = _title;
                 authorID = _authorID;
                 PostContent = _postContent;
@@ -363,7 +364,7 @@ namespace BigBadBolts_
                 downVotes = 0;
                 weight = 0;
                 timeStamp = DateTime.Now;
-                postComments = null;
+                postComments = myComments;
             }
             ////////////////END CONSTREUCTOR ZONE///////////////////////////////////////////
 
@@ -371,6 +372,8 @@ namespace BigBadBolts_
             {
                 get { return authorID; }
             }
+
+   
 
             public SortedSet<Comment> PostComments
             {
@@ -389,6 +392,11 @@ namespace BigBadBolts_
             public uint Score
             {
                 get { return upVotes - downVotes; }
+            }
+
+            public uint SubId
+            {
+                get { return subHome;  }
             }
 
             public uint PostRating
@@ -493,7 +501,18 @@ namespace BigBadBolts_
                 if (authorName.Length == 0)
                     authorName = this.authorID.ToString();
 
-                return "\t<" + this.PostID + "> [" + this.subHome + "] (" + this.Score + ") " + this.Title + " " + this.postContent + " - " + authorName + "|" + this.timeStamp.ToString() + "|";
+                string commentsOnPost = "\n";
+
+
+                foreach(Comment postComments in myComments)
+                {
+                    if( postComments.CommentID == this.PostID)
+                    {
+                        commentsOnPost = commentsOnPost + postComments.ToString() + '\n';
+                    }
+                }
+
+                return "\t<" + this.PostID + "> [" + this.subHome + "] (" + this.Score + ") " + this.Title + " " + this.postContent + " - " + authorName + "|" + this.timeStamp.ToString() + "|" + commentsOnPost;
             }
         }//End post class
 
@@ -596,6 +615,10 @@ namespace BigBadBolts_
             {
                 get { return commentID;  }
             }
+            public uint ParentID
+            {
+                get { return parentID; }
+            }
             public string Content
             {
                 get { return this.content; }
@@ -609,15 +632,22 @@ namespace BigBadBolts_
             /////////CONSTRUCTOR ZONE////////////////////////////////////////////////////////
             public Comment() //DEFAULT CONSTRUCTOR....may need some tweaks
             {
-                commentID = 0;
+                commentID = (uint)myComments.Count + 1;
                 authorID = 0;
                 content = "";
                 parentID = 0;
                 upVotes = 0;
                 downVotes = 0;
                 timeStamp = DateTime.Now;
-                commentReplies = null;
+                commentReplies = myComments;
                 indentLevel = 0;
+                foreach (Comment tabs in myComments)
+                {
+                    if (tabs.CommentID == this.parentID)
+                    {
+                        indentLevel = tabs.indentLevel + 1;
+                    }
+                }  
             }
             //This is used to create a new post from file.
             public Comment(uint _commentID, uint _authorID, string _content, uint _parentID, uint _upVotes, uint _downVotes, DateTime _timeStamp)
@@ -629,22 +659,41 @@ namespace BigBadBolts_
                 upVotes = _upVotes;
                 downVotes = _downVotes;
                 timeStamp = _timeStamp;
+                commentReplies = myComments;
+                indentLevel = 0;
+                foreach (Comment tabs in myComments)
+                {
+                    if (tabs.CommentID == this.parentID)
+                    {
+                        indentLevel = tabs.indentLevel + 1;
+                    }
+                }
+
             }
             public Comment(string _content, uint _authorID, uint _parentID)
             {
+                commentID = (uint)myComments.Count + 1;
                 content = _content;
                 authorID = _authorID;
                 parentID = _parentID;
                 upVotes = 1;
                 downVotes = 0;
-
-            } 
+                commentReplies = myComments;
+                indentLevel = 0;
+                foreach (Comment tabs in myComments)
+                {
+                    if (tabs.CommentID == this.parentID)
+                    {
+                        indentLevel = tabs.indentLevel + 1;
+                    }
+                }
+            }
             ////////////////END CONSTREUCTOR ZONE///////////////////////////////////////////
 
 
-   
 
-        public int CompareTo(Object aplha)
+
+            public int CompareTo(Object aplha)
             {
                 if (aplha == null)
                     throw new ArgumentNullException();
@@ -663,7 +712,34 @@ namespace BigBadBolts_
 
             public override string ToString()
             {
-                return this.content + '\n';
+                string authorName = "";
+                foreach (User item in myUsers)
+                {
+                    if (item.Id == this.authorID)
+                        authorName = item.Name;
+                }
+                if (authorName.Length == 0)
+                    authorName = this.authorID.ToString();
+                string replies = "\n";
+                string replyAuthorName = "";
+                foreach (Comment reply in this.commentReplies)
+                {
+                    for (int i = 0; i < this.indentLevel; ++i)
+                    {
+                        replies = replies + '\t'; 
+                    }
+                    foreach (User item in myUsers)
+                    {
+                        if (item.Id == reply.authorID)
+                            replyAuthorName = item.Name;
+                    }
+                    if (replyAuthorName.Length == 0)
+                        replyAuthorName = reply.authorID.ToString();
+                    replies = replies + "\t<" + reply.CommentID + "> (" + reply.Score + ") " + reply.content + " - " + replyAuthorName + "|" + reply.timeStamp.ToString() + "|";
+                    replies = replies + '\n';
+                }
+                replies = ""; //NOT WORKING
+                return "\t<" + this.CommentID + "> (" + this.Score + ") " + this.content + " - " + authorName + "|" + this.timeStamp.ToString() + "|" + replies;
             }
 
         }//End comment class
@@ -965,10 +1041,13 @@ namespace BigBadBolts_
                                 Console.WriteLine("");//Blank Line
                                 foreach (Subreddit currentReddit in mySubReddits)
                                 {
-                                    foreach (Post redditPost in currentReddit.SubPosts) //GET NULL ERROR HERE
-                                    { 
-                                        Console.WriteLine(redditPost.ToString()); // Might need to override the tostring method for this
-                                        Console.WriteLine("");//Blank Line
+                                    foreach (Post redditPost in myPosts) //GET NULL ERROR HERE
+                                    {
+                                        if(redditPost.SubId == currentReddit.Id)
+                                        {
+                                            Console.WriteLine(redditPost.ToString()); // Might need to override the tostring method for this
+                                            Console.WriteLine("");//Blank Line
+                                        }
                                     }
                                 }
                                 break;
@@ -980,14 +1059,19 @@ namespace BigBadBolts_
                                 Console.WriteLine("");//blank line
                                 foreach (Subreddit subreddit in mySubReddits) //Search for the subbreddit to view
                                 {
-                                    if (subreddit.Id.ToString() == subbredditIDToView)//Found the subreddit to view
+                                    if (subreddit.Id == UInt32.Parse(subbredditIDToView))//Found the subreddit to view
                                     {
                                         found = true;
-                                        foreach (Post subPost in subreddit.SubPosts)
+                                        Console.WriteLine("<ID> [Subreddit] (Score) Title + PostContent - PosterName |TimeStamp|");
+
+                                        foreach (Post subPost in myPosts)
                                         {
-                                            Console.WriteLine("");//blank line
-                                            Console.WriteLine(subPost.ToString());//This might need to overriden
-                                            Console.WriteLine("");//blank line
+                                            if (subPost.SubId == subreddit.Id)
+                                            {
+                                                Console.WriteLine("");//blank line
+                                                Console.WriteLine(subPost.ToString());//This might need to overriden
+                                                Console.WriteLine("");//blank line
+                                            }
                                         }
                                         break;
                                     }
@@ -1007,29 +1091,34 @@ namespace BigBadBolts_
                                     if (post.PostID.ToString() == postIDToView)//Found the post to view
                                     {
                                         found = true;
-                                        foreach (Comment commentOfPost in post.PostComments)
+                                        foreach (Comment commentOfPost in myComments)
                                         {
-                                            Console.WriteLine("");//blank line
-                                            Console.WriteLine(commentOfPost.ToString());//This might need to overriden
-                                            Console.WriteLine("");//blank line
+                                            if (commentOfPost.ParentID == post.PostID)
+                                            {
+                                                Console.WriteLine("");//blank line
+                                                Console.WriteLine(commentOfPost.ToString());//This might need to overriden
+                                                Console.WriteLine("");//blank line
+                                            }
                                         }
                                         break;
                                     }
                                 }
+
                                 //We did not find the Post_ID
                                 if (!found)
                                     Console.WriteLine("The Post ID entered was not found.");
+
                                 break;
                             case ("5"):  //Add comment to post
                                 string postIDtoComment;
-                                string comment;
-                                found =false;
+                                string comment = "";
+                                found = false;
                                 Console.Write("Please enter the ID of the post you wish to add a comment to: ");
                                 postIDtoComment = Console.ReadLine();
                                 Console.WriteLine("");//blank line
                                 foreach (Post post in myPosts) //Search for the post to comment to
                                 {
-                                    if (post.PostID.ToString() == postIDtoComment)//Found the post to add a comment
+                                    if (post.PostID == UInt32.Parse(postIDtoComment))//Found the post to add a comment
                                     {
                                         found = true;
                                         Console.WriteLine("Please enter a Comment: ");
@@ -1045,12 +1134,17 @@ namespace BigBadBolts_
                                             Console.WriteLine(fle.ToString());
                                             break;
                                         }
+                                        
                                         Comment commentToAdd = new Comment(
                                             comment, //content
                                             0001, //authorID //THIS IS ROGNESS USER
                                             post.PostID //parentID
                                             );
-                                        myComments.Add(commentToAdd);
+                                        Console.WriteLine(comment + post.PostID.ToString());
+                                        if (!myComments.Add(commentToAdd))//;
+                                            Console.WriteLine("");
+                                        else
+                                            commentToAdd = null;
                                         Console.WriteLine("");//blank line
                                         Console.WriteLine("Comment was added successfully to post : " + postIDtoComment);
                                         Console.WriteLine("");//blank line
